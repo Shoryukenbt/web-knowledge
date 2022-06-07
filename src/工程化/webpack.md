@@ -9,9 +9,9 @@
     | 阶段 | 说明 |
     | -- | -- |
     | enter-option | 初始化option |
-    | run | 初始化option |
+    | run | 开始编译 |
     | make | 从entery开始分析依赖，对每个依赖模块进行build |
-    | before-resolve | 堆模块位进行解析 |
+    | before-resolve | 对模块位置进行解析 |
     | build-module | 开始构建某个模块 |
     | normal-module-loader | 将loader加载完成的模块进行编译，生成AST树 |
     | program | 遍历AST，当遇到require等表达式时，收集依赖 |
@@ -28,7 +28,12 @@
     | 设置Externals | 分离基础包，不做解析 | 可以通过`HtmlWebpackExternalsPlugin`设置cdn等方式记载 |
     | 预编译资源模块 | 将基础包打包成一个文件 | 使用DLLPlugin进行分包，使用DLLReferencePlugind对manifest.json引用 |
     | 利用缓存提升二次构件速度 | 开启loader，plugin的缓存 | babel-loader, terser-webpack-plugin开启缓存，使用cache-loader或者hard-source-webpack-plugin |
-    | 缩小构建目标 | 不解析第三方包 |  |
+    | 缩小构建目标 | 不解析第三方包 | exclude排除三方包 |
     | treeShake | 擦除未使用的js, css | es6模块webpack默认支持，css使用purifyCss/uncss |
     | 图片压缩 |  | image-webpack-loader |
     | 使用动态PolyFill | 根据当前浏览器仅返回浏览器需要的PolyFill | 搭建动态Polyfill服务 |
+
+### loader
+主要是实现`source`的转换，通过loader的转换，生成webpack能够处理的资源
+### plugins
+本质是一个包含`apply`方法的对象，`apply`方法参数为`compile`对象，通过订阅compile的`hooks`监听运行时钩子，修改`compilition`中的状态，从而达到修改编译结果的目的。

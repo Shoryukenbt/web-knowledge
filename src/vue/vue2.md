@@ -65,3 +65,17 @@ Dep类就是一个可观察对象，可以被多个`watcher`订阅, `notify`广�
 ### computed和watcher
 1. computed的原理也是使用Watcher, 将key定义到vm实例上，并禁用setter, 和普通响应式对象不同的是，每次get都是先检测脏值，有脏值则计算最新的结果并返回，否则返回上次计算的结果
 2. watcher原理是针对每一个key创建一个watcher实例，定阅解析`expOrFn`过程中产生的依赖，并在接收到`notify`时运行回调函数
+
+### diff算法
+1. oldHead和newHead对比，如果`sameNode(oldHead, newHead)`, 则调用patchNode(oldHead, newHead), 并且oldHead和newHead下移
+2. oldTail和newTail对比，如果`sameNode(oldTail, newTail)`, 则调用patchNode(oldTail, newTail)，并且oldTail和newTail上移
+3. oldHead和newTail对比，如果是`sameNode`, 则移动oldHead.elem到oldTail.elem之后, 并调用`patch(oldHead, newTail)`, 并且oldHead下移，newTail上移
+4. oldTail和newHead对比，如果是`sameNode`, 则移动oldTail.elem到oldHead.elem之前, 并调用`pathNode(oldTail, newHead)`, 并且oldTail上移，newHead下移
+5. 以上都没有匹配则遍历oldHead和oldTail之间的VNode, 找到和newHead匹配的OldNode, 若果找到匹配项则移动匹配的oldNode.elem到oldHead.elem之前, 并调用`patchVNode(matchOldNode, newHead)`, 设置old匹配位置为null, newHead下移; 否则调用`createElement`，并将创建的节点插入到`oldHead`之前，newHead下移
+6. 遍历过程中会遇到第5部设置为`null`的`oldNode`, 此时执行`oldHead`下移或者`oldTail`上移
+7. 当old或者new的head > tail时，终止遍历。此时如果old还有剩余，则对`oldHead`到`.oldTail`之间的VNode执行removeVNodes操作; 如果new还有剩余，则对`newHead`到`newTail`之间的节点执行`addVnodes`操作，若果当前`newTail`则将新创建elem使用`append`插入到parent.children的尾部，否则使用`insertBefore`插入到`newTail.elem`之前
+
+### VNode
+1. VNode是什么？ VNode是对虚拟Dom的一种抽象，描述真是dom的微结构以及和Vue Component的关系，所有对Dom的修改都先更新对应的Vnode, 在通过Vnode实现最小更新
+2. VNode怎么创建的？ VueComponent调用render函数返回VNode
+3. Vnode有什么用？ Vue在patch的时候，通过VNode创建(更新)真实DOM，并且在更新时通过比较VNode，达到最小化更新真实DOM的目的
